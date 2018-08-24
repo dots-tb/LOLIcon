@@ -7,23 +7,25 @@ A  small onscreen console that runs from the kernel level. So it probably won't 
 
 (Also some advice, use ioPlus which allows you to use normal sceIo functions in user plugins <https://github.com/CelesteBlue-dev/PSVita-RE-tools/tree/master/ioPlus/ioPlus-0.1>).
 
-Oh yeah, and it adds 500mhz (aka real overclocking). Enjoy... (The menu may lag, but it will go fullspeed when you exit). The kernel level allows for more options in regards to overclocking. 
+Oh yeah, and it adds 500mhz (aka real overclocking). Enjoy...The kernel level allows for more options in regards to overclocking. 
 
-WARNING: THIS IS OBVIOUSLY EXPERIMENTAL AND CARRIES THE DANGERS OF OVERCLOCKING (FOR REAL OVERCLOCKING). Please proceed with caution.
+ ### (The menu may lag, but it will go fullspeed when you exit). 
 
-Further note: Yifan Lu has labeled this mode as 494mhz, but seeing how the rest of the pervasive values correspond to a value slightly off, Celeste and I have decided to label it 500mhz instead.
+### WARNING: THIS IS OBVIOUSLY EXPERIMENTAL AND CARRIES THE DANGERS OF OVERCLOCKING (FOR REAL OVERCLOCKING). Please proceed with caution.
 
-PS: Userland apps will report false speeds, this is LIBEL and FAKE NEWS. We have provided an indicator for the direct registers that control the ARM clock speeds on the overclock page to compare to the wikipage located below.
+### Further note: Yifan Lu has labeled this mode as 494mhz, but seeing how the rest of the pervasive values correspond to a value slightly off, Celeste and I have decided to label it 500mhz instead.
+
+### PS: Userland apps will report false speeds, this is LIBEL and FAKE NEWS. We have provided an indicator for the direct registers that control the ARM clock speeds on the overclock page to compare to the wikipage located below.
 
 Other features: Quickly exit game, maintains configuration for each process(including shell)*, FPS counter, x and o button swap, allows for proper default game clocking, you can also overclock shell's boot up. There might be more... and more to come.
 
 *Suspending to shell and resuming game will LOAD A CONFIGURATION (DEFAULT OR SAVED). You will lose your changes when changing a task (including suspending to shell) unless you save.
 
-## Video courtesy of @Yoyogames28 :
+Video courtesy of @Yoyogames28 :
 
 https://www.youtube.com/watch?v=mNPscIVubOY
 
-## Video courtesy of castelo:
+Video courtesy of castelo:
 
 https://www.youtube.com/watch?v=ATiv301_eOA
 
