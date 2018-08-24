@@ -19,11 +19,11 @@ Other features: Quickly exit game, maintains configuration for each process(incl
 
 *Suspending to shell and resuming game will LOAD A CONFIGURATION (DEFAULT OR SAVED). You will lose your changes when changing a task (including suspending to shell) unless you save.
 
-Video courtesy of @Yoyogames28 :
+## Video courtesy of @Yoyogames28 :
 
 https://www.youtube.com/watch?v=mNPscIVubOY
 
-Video courtesy of castelo:
+## Video courtesy of castelo:
 
 https://www.youtube.com/watch?v=ATiv301_eOA
 
@@ -56,19 +56,19 @@ https://github.com/Rinnegatamante/Framecounter/blob/master/main.c
 
 https://github.com/joel16/PSV-VSH-Menu/tree/master/source
 
-##Major Thanks:
+## Major Thanks:
 
 @CelesteBlue123 - Help. TREMENDOUS and loyal DEV. Only the BEST! I recommend you retain the services of this man. HE DOES NOT CRACK!
 
 @nyassen (sys) - some guy
 
-##PR and special testing:
+## PR and special testing:
 
 @Yoyogames28 - Discount DF and cute boi
 
 castelo - Great tester, thanks to @Cimmerian_Iter for letters of rec. 
 
-##Testing team:
+# #Testing team:
 
 @juliosueiras
 
