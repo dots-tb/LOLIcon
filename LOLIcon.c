@@ -434,6 +434,14 @@ void drawMenu() {
 static tai_hook_ref_t ref_hook0;
 int _sceDisplaySetFrameBufInternalForDriver(int fb_id1, int fb_id2, const SceDisplayFrameBuf *pParam, int sync){
 	if(fb_id1 && pParam) {
+		if(!shell_pid && fb_id2) {//3.68 fix
+			if(ksceKernelGetProcessTitleId(ksceKernelGetProcessId(), titleid, sizeof(titleid))==0 && titleid[0] != 0) {
+				if(strncmp("main",titleid, sizeof(titleid))==0) {
+					shell_pid = ksceKernelGetProcessId();
+					load_and_refresh();
+				}
+			}
+		}
 		SceDisplayFrameBuf kfb;
 		memset(&kfb,0,sizeof(kfb));
 		memcpy(&kfb, pParam, sizeof(SceDisplayFrameBuf));

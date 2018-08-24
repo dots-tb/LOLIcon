@@ -7,15 +7,13 @@ A  small onscreen console that runs from the kernel level. So it probably won't 
 
 (Also some advice, use ioPlus which allows you to use normal sceIo functions in user plugins <https://github.com/CelesteBlue-dev/PSVita-RE-tools/tree/master/ioPlus/ioPlus-0.1>).
 
-Oh yeah, and it adds 500mhz (aka real overclocking). Enjoy...The kernel level allows for more options in regards to overclocking. 
+Oh yeah, and it adds 500mhz (aka real overclocking). Enjoy... (The menu may lag, but it will go fullspeed when you exit). The kernel level allows for more options in regards to overclocking. 
 
- ### (The menu may lag, but it will go fullspeed when you exit). 
+WARNING: THIS IS OBVIOUSLY EXPERIMENTAL AND CARRIES THE DANGERS OF OVERCLOCKING (FOR REAL OVERCLOCKING). Please proceed with caution.
 
-### WARNING: THIS IS OBVIOUSLY EXPERIMENTAL AND CARRIES THE DANGERS OF OVERCLOCKING (FOR REAL OVERCLOCKING). Please proceed with caution.
+Further note: Yifan Lu has labeled this mode as 494mhz, but seeing how the rest of the pervasive values correspond to a value slightly off, Celeste and I have decided to label it 500mhz instead.
 
-### Further note: Yifan Lu has labeled this mode as 494mhz, but seeing how the rest of the pervasive values correspond to a value slightly off, Celeste and I have decided to label it 500mhz instead.
-
-### PS: Userland apps will report false speeds, this is LIBEL and FAKE NEWS. We have provided an indicator for the direct registers that control the ARM clock speeds on the overclock page to compare to the wikipage located below.
+PS: Userland apps will report false speeds, this is LIBEL and FAKE NEWS. We have provided an indicator for the direct registers that control the ARM clock speeds on the overclock page to compare to the wikipage located below.
 
 Other features: Quickly exit game, maintains configuration for each process(including shell)*, FPS counter, x and o button swap, allows for proper default game clocking, you can also overclock shell's boot up. There might be more... and more to come.
 
@@ -58,19 +56,21 @@ https://github.com/Rinnegatamante/Framecounter/blob/master/main.c
 
 https://github.com/joel16/PSV-VSH-Menu/tree/master/source
 
-## Major Thanks:
+##Major Thanks:
 
 @CelesteBlue123 - Help. TREMENDOUS and loyal DEV. Only the BEST! I recommend you retain the services of this man. HE DOES NOT CRACK!
 
 @nyassen (sys) - some guy
 
-## PR and special testing:
+##PR and special testing:
 
 @Yoyogames28 - Discount DF and cute boi
 
 castelo - Great tester, thanks to @Cimmerian_Iter for letters of rec. 
 
-## Testing team:
+@froid_san 3.68 tester... I forgot to test on 3.68. Sad!
+
+##Testing team:
 
 @juliosueiras
 
