@@ -68,7 +68,7 @@ https://github.com/joel16/PSV-VSH-Menu/tree/master/source
 
 castelo - Great tester, thanks to @Cimmerian_Iter for letters of rec. 
 
-# #Testing team:
+## Testing team:
 
 @juliosueiras
 
