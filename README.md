@@ -64,6 +64,8 @@ https://github.com/joel16/PSV-VSH-Menu/tree/master/source
 
 @nyassen (sys) - some guy
 
+@SilicaVita - this mysterious person helped with the name, not afraid to keep spamming that he did.
+
 ## PR and special testing:
 
 @Yoyogames28 - Discount DF and cute boi
