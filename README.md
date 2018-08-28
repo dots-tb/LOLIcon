@@ -5,7 +5,7 @@ by @dots_tb
 
 A  small onscreen console that runs from the kernel level. So it probably won't crash games as many certain user plugins do. It also removes dependency of kuio.
 
-(Also some advice, use ioPlus which allows you to use normal sceIo functions in user plugins <https://github.com/CelesteBlue-dev/PSVita-RE-tools/tree/master/ioPlus/ioPlus-0.1>).
+(Also some advice FOR DEVS, use ioPlus which allows you to use normal sceIo functions in user plugins <https://github.com/CelesteBlue-dev/PSVita-RE-tools/tree/master/ioPlus/ioPlus-0.1>).
 
 Oh yeah, and it adds 500mhz (aka real overclocking). Enjoy...The kernel level allows for more options in regards to overclocking. 
 
