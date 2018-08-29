@@ -99,7 +99,6 @@ void reset_config() {
 }
 
 int load_config() {
-	ksceIoMkdir(CONFIG_PATH,6);
 	snprintf(config_path, sizeof(config_path), CONFIG_PATH"%s/config.bin", titleid);
 	printf("loaded %s\n", config_path);
 	if(ReadFile(config_path, &current_config, sizeof(current_config))<0) {
@@ -113,7 +112,6 @@ int load_config() {
 }
 
 int save_config() {
-	ksceIoMkdir(CONFIG_PATH,6);	
 	snprintf(config_path, sizeof(config_path), CONFIG_PATH"%s", titleid);
 	ksceIoMkdir(config_path, 6);
 	snprintf(config_path, sizeof(config_path), CONFIG_PATH"%s/config.bin", titleid);
@@ -123,7 +121,6 @@ int save_config() {
 }
 
 int save_default_config() {
-	ksceIoMkdir(CONFIG_PATH,6);
 	snprintf(config_path, sizeof(config_path), CONFIG_PATH"default.bin");
 	if(WriteFile(config_path, &current_config, sizeof(current_config))<0)
 		return -1;
@@ -558,6 +555,7 @@ int SceProcEventForDriver_414CC813(int pid, int id, int r3, int r4, int r5, int 
 
 void _start() __attribute__ ((weak, alias ("module_start")));
 int module_start(SceSize argc, const void *args) {
+	ksceIoMkdir(CONFIG_PATH,6);
 	module_get_export_func(KERNEL_PID, "ScePower", 0x1590166F, 0x475BCC82, &_kscePowerGetGpuEs4ClockFrequency);
 	module_get_export_func(KERNEL_PID, "ScePower", 0x1590166F, 0x264C24FC, &_kscePowerSetGpuEs4ClockFrequency);
 	module_get_export_func(KERNEL_PID, "ScePower", 0x1590166F, 0x64641E6A, &_kscePowerGetGpuClockFrequency);
