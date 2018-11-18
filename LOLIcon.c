@@ -100,15 +100,22 @@ void reset_config() {
 
 int load_config() {
 	snprintf(config_path, sizeof(config_path), CONFIG_PATH"%s/config.bin", titleid);
-	printf("loaded %s\n", config_path);
-	if(ReadFile(config_path, &current_config, sizeof(current_config))<0) {
+
+	if (!FileExists(config_path)) {
 		snprintf(config_path, sizeof(config_path), CONFIG_PATH"default.bin");
-		if(ReadFile(config_path, &current_config, sizeof(current_config))<0) {
-			reset_config();
-			return -1;
-		}
+
+		if (!FileExists(config_path))
+			return NO_ERROR;
 	}
-	return 0;
+
+	if(ReadFile(config_path, &current_config, sizeof(current_config)) < 0) {
+		reset_config();
+		return LOAD_ERROR;
+	}
+
+	printf("loaded %s\n", config_path);
+
+	return LOAD_GOOD;
 }
 
 int save_config() {
@@ -138,9 +145,8 @@ void refreshClocks() {
 }
 
 void load_and_refresh() {
-	error_code = LOAD_GOOD;
-	if(load_config()<0) 
-		error_code = LOAD_ERROR;			
+	error_code = load_config();
+
 	refreshClocks();
 	printf("forcing reset\n");
 }

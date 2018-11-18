@@ -2,6 +2,12 @@
 #include <vitasdkkern.h>
 #include <string.h>
 
+int FileExists(const char *file) {
+	SceIoStat stat = {0};
+
+	return ksceIoGetstat(file, &stat) >= 0;
+}
+
 int ReadFile(const char *file, void *buf, int size) {
 	SceUID fd = ksceIoOpen(file, SCE_O_RDONLY, 0);
 	if (fd < 0)
