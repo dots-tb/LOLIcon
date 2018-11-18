@@ -176,33 +176,26 @@ void drawErrors() {
 
 int kscePowerSetClockFrequency_patched(tai_hook_ref_t ref_hook, int port, int freq) {
 	int ret = 0;
-
+	
 	if (!isReseting)
 		profile_default[port] = freq;
-
-	switch (port) {
-		case 0: {
-			if (freq != 500)
-				break;
-
-			ret = TAI_CONTINUE(int, ref_hook, 444);
-            ksceKernelDelayThread(10000);
-            *clock_speed = profiles[current_config.mode][port];
-            *clock_r1 = 0xF;
-            *clock_r2 = 0x0;
-            return ret;
-		}
-			break;
-		case 2: {
-			ret = TAI_CONTINUE(int, ref_hook, profiles[current_config.mode][port], profiles[current_config.mode][port]);
-		}
-			break;
-		default: {
-			ret = TAI_CONTINUE(int, ref_hook, profiles[current_config.mode][port]);
-		}
-			break;
+		
+	if (port == 0 && freq == 500) {
+		ret = TAI_CONTINUE(int, ref_hook, 444);
+		ksceKernelDelayThread(10000);
+		*clock_speed = profiles[current_config.mode][port];
+		*clock_r1 = 0xF;
+		*clock_r2 = 0x0;
+		
+		return ret;
+		
+	} else if (port == 2) {
+		ret = TAI_CONTINUE(int, ref_hook, profiles[current_config.mode][port], profiles[current_config.mode][port]);
+		
+	} else {
+		ret = TAI_CONTINUE(int, ref_hook, profiles[current_config.mode][port]);
 	}
-
+		
 	return ret;
 }
 
@@ -664,7 +657,7 @@ int module_start(SceSize argc, const void *args) {
 	strncpy(titleid, "main", sizeof(titleid));
 	reset_config();
 
-	current_config.mode = 3;
+	current_config.mode = 1;
 
 	refreshClocks();
 
