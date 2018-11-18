@@ -58,7 +58,7 @@ uint32_t current_pid = 0, shell_pid = 0;
 
 int error_code = NO_ERROR;
 int showMenu = 0, pos = 0, isReseting = 0, forceReset = 0, isPspEmu = 0, isShell = 1;
-int page = 0, willexit = 0, fps;
+int page = 0, fps;
 static uint64_t ctrl_timestamp, msg_time = 0;
 long curTime = 0, lateTime = 0, fps_count = 0;
 
@@ -307,18 +307,10 @@ int checkButtons(int port, tai_hook_ref_t ref_hook, SceCtrlData *ctrl, int count
 								}
 									break;
 								case 6: {
-									willexit = current_pid;
-								}
-									break;
-								case 7: {
-									kscePowerRequestSuspend();
-								}
-									break;
-								case 8: {
 									kscePowerRequestColdReset();
 								}
 									break;
-								case 9: {
+								case 7: {
 									kscePowerRequestStandby();
 								}
 									break;
@@ -384,11 +376,6 @@ int checkButtons(int port, tai_hook_ref_t ref_hook, SceCtrlData *ctrl, int count
 				current_pid=ksceKernelGetProcessId();
 			}
 		}
-
-		if (willexit == current_pid && current_pid == ksceKernelGetProcessId())
-			ksceKernelExitProcess(0);
-		else
-			willexit = 0;
 
 	} else if (forceReset == 2) {
 		isShell = 0;
@@ -470,8 +457,6 @@ void drawMenu() {
 			MENU_OPTION("Oclock Options");
 			MENU_OPTION("OSD Options");
 			MENU_OPTION("Ctrl Options");
-			MENU_OPTION("Exit Game");
-			MENU_OPTION("Suspend vita");
 			MENU_OPTION("Restart vita");
 			MENU_OPTION("Shutdown vita");
 			break;
