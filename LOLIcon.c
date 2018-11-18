@@ -158,12 +158,14 @@ void doFps() {
 }
 
 void drawErrors() {
-	if(error_code > 0) {
-		if(!curTime || (msg_time == 0 && !showMenu))
-			msg_time = (curTime = ksceKernelGetProcessTimeWideCore()) + TIMER_SECOND * 2;
-		if((!current_config.hideErrors && curTime < msg_time) || showMenu)
-			blit_stringf(20, 0, "%s : %d",  ERRORS[error_code], error_code);
-	}
+	if(current_config.hideErrors || error_code <= 0)
+		return;
+
+	if(!curTime || (msg_time == 0 && !showMenu))
+		msg_time = (curTime = ksceKernelGetProcessTimeWideCore()) + TIMER_SECOND * 2;
+
+	if(curTime < msg_time || showMenu)
+		blit_stringf(20, 0, "%s : %d",  ERRORS[error_code], error_code);
 }
 
 int kscePowerSetClockFrequency_patched(tai_hook_ref_t ref_hook, int port, int freq){
