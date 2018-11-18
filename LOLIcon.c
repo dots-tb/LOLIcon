@@ -118,18 +118,18 @@ int save_config() {
 	snprintf(config_path, sizeof(config_path), CONFIG_PATH"%s/config.bin", titleid);
 
 	if (WriteFile(config_path, &current_config, sizeof(current_config)) < 0)
-		return -1;
+		return SAVE_ERROR;
 
-	return 0;
+	return SAVE_GOOD;
 }
 
 int save_default_config() {
 	snprintf(config_path, sizeof(config_path), CONFIG_PATH"default.bin");
 
 	if (WriteFile(config_path, &current_config, sizeof(current_config)) < 0)
-		return -1;
+		return SAVE_ERROR;
 
-	return 0;
+	return SAVE_GOOD;
 }
 
 void refreshClocks() {
@@ -286,15 +286,11 @@ int checkButtons(int port, tai_hook_ref_t ref_hook, SceCtrlData *ctrl, int count
 						case 0: {
 							switch (pos) {
 								case 0: {
-									error_code = SAVE_GOOD;
-									if (save_config() < 0)
-										error_code = SAVE_ERROR;
+									error_code = save_config();
 								}
 									break;
 								case 1: {
-									error_code = SAVE_GOOD;
-									if (save_default_config() < 0)
-										error_code = SAVE_ERROR;
+									error_code = save_default_config();
 								}
 									break;
 								case 2: {
