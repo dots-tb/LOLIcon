@@ -24,8 +24,9 @@
 #define RIGHT_LABEL_X CENTER(0)
 #define printf ksceDebugPrintf
 
-#define CONFIG_PATH  "ur0:LOLIcon/"
-#define TIMER_SECOND 1000000 // 1 second
+#define CONFIG_PATH     "ur0:LOLIcon/"
+#define TIMER_SECOND    1000000 // 1 second
+#define CUSTOM_BTNS_NUM 12
 
 static SceUID g_hooks[14];
 
@@ -48,6 +49,10 @@ typedef struct titleid_config {
 	int showBat;
 	int buttonSwap;
 	int showFPS;
+	SceCtrlButtons sbtn1;
+	SceCtrlButtons sbtn2;
+	SceCtrlButtons cbtn1;
+	SceCtrlButtons cbtn2;
 } titleid_config;
 
 static char config_path[PATH_MAX];
@@ -61,6 +66,13 @@ int showMenu = 0, pos = 0, isReseting = 0, forceReset = 0, isPspEmu = 0, isShell
 int page = 0, fps;
 static uint64_t ctrl_timestamp, msg_time = 0;
 long curTime = 0, lateTime = 0, fps_count = 0;
+static char show1[10], show2[10], cls1[10], cls2[10];
+int btn1Idx = 0, btn2Idx = 0, btn3Idx = 0, btn4Idx = 0;
+SceCtrlButtons validBtn[] = {
+	SCE_CTRL_SELECT, SCE_CTRL_START, SCE_CTRL_UP, SCE_CTRL_DOWN, SCE_CTRL_LEFT, SCE_CTRL_RIGHT,
+	SCE_CTRL_CROSS, SCE_CTRL_CIRCLE, SCE_CTRL_SQUARE, SCE_CTRL_TRIANGLE, SCE_CTRL_VOLUP,
+	SCE_CTRL_VOLDOWN
+};
 
 unsigned int *clock_r1, *clock_r2;
 uint32_t *clock_speed;
@@ -88,8 +100,54 @@ int (*_ksceKernelExitProcess)(int);
 #define kscePowerGetGpuClockFrequency _kscePowerGetGpuClockFrequency
 #define kscePowerSetGpuClockFrequency _kscePowerSetGpuClockFrequency
 
+void getCustomButtonsLabel() {
+	const char *validBtnL[CUSTOM_BTNS_NUM] = {
+		"Select", "Start", "Up", "Down", "Left", "Right", "Cross",
+		"Circle", "Square", "Triangle", "Vol Up", "Vol Down"
+	};
+
+	for (int i=0, t=0; i<CUSTOM_BTNS_NUM; ++i) {
+		if (t == 4)
+			break;
+
+		if (current_config.sbtn1 == validBtn[i]) {
+			snprintf(show1, sizeof(show1), "%s", validBtnL[i]);
+			btn1Idx = i;
+			++t;
+
+		} else if (current_config.sbtn2 == validBtn[i]) {
+			snprintf(show2, sizeof(show2), "%s", validBtnL[i]);
+			btn2Idx = i;
+			++t;
+		}
+
+		if (current_config.cbtn1 == validBtn[i]) {
+			snprintf(cls1, sizeof(cls1), "%s", validBtnL[i]);
+			btn3Idx = i;
+			++t;
+
+		} else if (current_config.cbtn2 == validBtn[i]) {
+			snprintf(cls2, sizeof(cls2), "%s", validBtnL[i]);
+			btn4Idx = i;
+			++t;
+		}
+	}
+
+	return;
+}
+
+int isValidCustomBtnCombo() {
+	return !((current_config.sbtn1 == current_config.cbtn1 && current_config.sbtn2 == current_config.cbtn2) ||
+			(current_config.sbtn1 == current_config.cbtn2 && current_config.sbtn2 == current_config.cbtn1) ||
+			(current_config.sbtn1 == current_config.sbtn2) || (current_config.cbtn1 == current_config.cbtn2));
+}
+
 void reset_config() {
 	memset(&current_config, 0, sizeof(current_config));
+	current_config.sbtn1 = SCE_CTRL_SELECT;
+	current_config.sbtn2 = SCE_CTRL_UP;
+	current_config.cbtn1 = SCE_CTRL_SELECT;
+	current_config.cbtn2 = SCE_CTRL_DOWN;
 }
 
 int load_config() {
@@ -149,7 +207,6 @@ void load_and_refresh() {
 	printf("forcing reset\n");
 }
 
-
 // This function is from VitaJelly by DrakonPL and Rinne's framecounter
 void doFps() {
 	++fps_count;
@@ -176,26 +233,26 @@ void drawErrors() {
 
 int kscePowerSetClockFrequency_patched(tai_hook_ref_t ref_hook, int port, int freq) {
 	int ret = 0;
-	
+
 	if (!isReseting)
 		profile_default[port] = freq;
-		
+
 	if (port == 0 && freq == 500) {
 		ret = TAI_CONTINUE(int, ref_hook, 444);
 		ksceKernelDelayThread(10000);
 		*clock_speed = profiles[current_config.mode][port];
 		*clock_r1 = 0xF;
 		*clock_r2 = 0x0;
-		
+
 		return ret;
-		
+
 	} else if (port == 2) {
 		ret = TAI_CONTINUE(int, ref_hook, profiles[current_config.mode][port], profiles[current_config.mode][port]);
-		
+
 	} else {
 		ret = TAI_CONTINUE(int, ref_hook, profiles[current_config.mode][port]);
 	}
-		
+
 	return ret;
 }
 
@@ -220,15 +277,18 @@ static int power_patched4(int freq) {
 }
 
 int checkButtons(int port, tai_hook_ref_t ref_hook, SceCtrlData *ctrl, int count) {
-	int ret = 0, state;
+	int ret = 0;
 
 	if (ref_hook == 0)
 		return 1;
 
 	ret = TAI_CONTINUE(int, ref_hook, port, ctrl, count);
 
+	if (isPspEmu)
+		return ret;
+
 	if (!showMenu) {
-		if (!isPspEmu && (ctrl->buttons & SCE_CTRL_UP) && (ctrl->buttons & SCE_CTRL_SELECT))
+		if ((ctrl->buttons & current_config.sbtn1) && (ctrl->buttons & current_config.sbtn2))
 			ctrl_timestamp = showMenu = 1;
 
 		if (current_config.buttonSwap && (ctrl->buttons & 0x6000) && (ctrl->buttons & 0x6000) != 0x6000 &&
@@ -240,33 +300,168 @@ int checkButtons(int port, tai_hook_ref_t ref_hook, SceCtrlData *ctrl, int count
 		ctrl->buttons = 0;
 
 		if (ctrl->timeStamp > ctrl_timestamp + 300*1000) {
-			if (ksceKernelGetProcessId() == shell_pid) {
+			if ((buttons & current_config.cbtn1) && (buttons & current_config.cbtn2))
+				error_code = showMenu = 0;
+
+			if (showMenu && ksceKernelGetProcessId() == shell_pid) {
 				if (buttons & SCE_CTRL_LEFT) {
 					switch (page) {
-						case 1:
+						case 1: {
 							if (current_config.mode > 0) {
 								ctrl_timestamp = ctrl->timeStamp;
 								--current_config.mode;
 								refreshClocks();
 							}
+						}
+							break;
+						case 3: {
+							switch (pos) {
+								case 1: {
+									if ((btn1Idx-1) >= 0) {
+										--btn1Idx;
+
+										current_config.sbtn1 = validBtn[btn1Idx];
+										if (!isValidCustomBtnCombo()) {
+											btn1Idx = (btn1Idx-1) >= 0 ? btn1Idx-1:btn1Idx+1;
+											current_config.sbtn1 = validBtn[btn1Idx];
+										}
+
+										getCustomButtonsLabel();
+									}
+								}
+									break;
+								case 2: {
+									if ((btn2Idx-1) >= 0) {
+										--btn2Idx;
+
+										current_config.sbtn2 = validBtn[btn2Idx];
+										if (!isValidCustomBtnCombo()) {
+											btn2Idx = (btn2Idx-1) >= 0 ? btn2Idx-1:btn2Idx+1;
+											current_config.sbtn2 = validBtn[btn2Idx];
+										}
+
+										getCustomButtonsLabel();
+									}
+								}
+									break;
+								case 3: {
+									if ((btn3Idx-1) >= 0) {
+										--btn3Idx;
+
+										current_config.cbtn1 = validBtn[btn3Idx];
+										if (!isValidCustomBtnCombo()) {
+											btn3Idx = (btn3Idx-1) >= 0 ? btn3Idx-1:btn3Idx+1;
+											current_config.cbtn1 = validBtn[btn3Idx];
+										}
+
+										getCustomButtonsLabel();
+									}
+								}
+									break;
+								case 4: {
+									if ((btn4Idx-1) >= 0) {
+										--btn4Idx;
+
+										current_config.cbtn2 = validBtn[btn4Idx];
+										if (!isValidCustomBtnCombo()) {
+											btn4Idx = (btn4Idx-1) >= 0 ? btn4Idx-1:btn4Idx+1;
+											current_config.cbtn2 = validBtn[btn4Idx];
+										}
+
+										getCustomButtonsLabel();
+									}
+								}
+									break;
+								default:
+									break;
+							}
+
+							ctrl_timestamp = ctrl->timeStamp;
+						}
 							break;
 						default:
 							break;
 					}
-					
+
 				} else if (buttons & SCE_CTRL_RIGHT) {
 					switch (page) {
-						case 1:
+						case 1: {
 							if (current_config.mode < 4) {
 								ctrl_timestamp = ctrl->timeStamp;
 								++current_config.mode;
 								refreshClocks();
 							}
+						}
+							break;
+						case 3: {
+							switch (pos) {
+								case 1: {
+									if ((btn1Idx+1) < CUSTOM_BTNS_NUM) {
+										++btn1Idx;
+
+										current_config.sbtn1 = validBtn[btn1Idx];
+										if (!isValidCustomBtnCombo()) {
+											btn1Idx = (btn1Idx+1) < CUSTOM_BTNS_NUM ? btn1Idx+1:btn1Idx-1;
+											current_config.sbtn1 = validBtn[btn1Idx];
+										}
+
+										getCustomButtonsLabel();
+									}
+								}
+									break;
+								case 2: {
+									if ((btn2Idx+1) < CUSTOM_BTNS_NUM) {
+										++btn2Idx;
+
+										current_config.sbtn2 = validBtn[btn2Idx];
+										if (!isValidCustomBtnCombo()) {
+											btn2Idx = (btn2Idx+1) < CUSTOM_BTNS_NUM ? btn2Idx+1:btn2Idx-1;
+											current_config.sbtn2 = validBtn[btn2Idx];
+										}
+
+										getCustomButtonsLabel();
+									}
+								}
+									break;
+								case 3: {
+									if ((btn3Idx+1) < CUSTOM_BTNS_NUM) {
+										++btn3Idx;
+
+										current_config.cbtn1 = validBtn[btn3Idx];
+										if (!isValidCustomBtnCombo()) {
+											btn3Idx = (btn3Idx+1) < CUSTOM_BTNS_NUM ? btn3Idx+1:btn3Idx-1;
+											current_config.cbtn1 = validBtn[btn3Idx];
+										}
+
+										getCustomButtonsLabel();
+									}
+								}
+									break;
+								case 4: {
+									if ((btn4Idx+1) < CUSTOM_BTNS_NUM) {
+										++btn4Idx;
+
+										current_config.cbtn2 = validBtn[btn4Idx];
+										if (!isValidCustomBtnCombo()) {
+											btn4Idx = (btn4Idx+1) < CUSTOM_BTNS_NUM ? btn4Idx+1:btn4Idx-1;
+											current_config.cbtn2 = validBtn[btn4Idx];
+										}
+
+										getCustomButtonsLabel();
+									}
+								}
+									break;
+								default:
+									break;
+							}
+
+							ctrl_timestamp = ctrl->timeStamp;
+						}
 							break;
 						default:
 							break;
 					}
-					
+
 				} else if ((buttons & SCE_CTRL_UP) && pos > 0) {
 					ctrl_timestamp = ctrl->timeStamp;
 					--pos;
@@ -302,6 +497,8 @@ int checkButtons(int port, tai_hook_ref_t ref_hook, SceCtrlData *ctrl, int count
 								}
 									break;
 								case 5: {
+									getCustomButtonsLabel();
+
 									page = 3;
 									pos = 0;
 								}
@@ -360,9 +557,6 @@ int checkButtons(int port, tai_hook_ref_t ref_hook, SceCtrlData *ctrl, int count
 					ctrl_timestamp = ctrl->timeStamp;
 				}
 			}
-
-			if ((buttons & SCE_CTRL_SELECT) && (buttons & SCE_CTRL_DOWN))
-				error_code = showMenu = 0;
 		}
 	}
 
@@ -505,9 +699,14 @@ void drawMenu() {
 			MENU_OPTION_F("Show Battery %d",current_config.showBat);
 			MENU_OPTION_F("Hide Errors %d",current_config.hideErrors);
 			break;
-		case 3:
+		case 3: {
 			blit_stringf(LEFT_LABEL_X, 88, "CONTROL");
-			MENU_OPTION_F("BUTTON SWAP %d",current_config.buttonSwap);
+			MENU_OPTION_F("Swap X/O Buttons %d", current_config.buttonSwap);
+			MENU_OPTION_F("Show Menu Btn 1 %s", show1);
+			MENU_OPTION_F("Show Menu Btn 2 %s", show2);
+			MENU_OPTION_F("Close Menu Btn 1 %s", cls1);
+			MENU_OPTION_F("Close Menu Btn 2 %s", cls2);
+		}
 			break;
 		default:
 			break;
@@ -521,7 +720,7 @@ static tai_hook_ref_t ref_hook0;
 int _sceDisplaySetFrameBufInternalForDriver(int fb_id1, int fb_id2, const SceDisplayFrameBuf *pParam, int sync) {
 	if (isPspEmu || !fb_id1 || !pParam)
 		return TAI_CONTINUE(int, ref_hook0, fb_id1, fb_id2, pParam, sync);
-		
+
 	if (!shell_pid && fb_id2) { // 3.68 fix
 		if (ksceKernelGetProcessTitleId(ksceKernelGetProcessId(), titleid, sizeof(titleid)) == 0 && titleid[0] != 0) {
 			if (strncmp("main",titleid, sizeof(titleid)) == 0) {
@@ -550,7 +749,7 @@ int _sceDisplaySetFrameBufInternalForDriver(int fb_id1, int fb_id2, const SceDis
 		if (current_config.showBat)
 			blit_stringf(20, 30, "%02d\%", kscePowerGetBatteryLifePercent());
 	}
-	
+
 	return TAI_CONTINUE(int, ref_hook0, fb_id1, fb_id2, pParam, sync);
 }
 
@@ -579,7 +778,6 @@ static tai_hook_ref_t process_hook0;
 int SceProcEventForDriver_414CC813(int pid, int id, int r3, int r4, int r5, int r6) {
 	SceKernelProcessInfo info;
 	info.size = 0xE8;
-	char module_name[28];
 
 	if (strncmp("main",titleid, sizeof(titleid)) == 0) {
 		switch (id) {
@@ -596,7 +794,7 @@ int SceProcEventForDriver_414CC813(int pid, int id, int r3, int r4, int r5, int 
 				isPspEmu = getFindModNameFromPID(pid, "adrenaline", sizeof("adrenaline")) ||
 							getFindModNameFromPID(pid, "ScePspemu", sizeof("ScePspemu"));
 				current_pid = pid;
-				
+
 				if (!isPspEmu) {
 					forceReset = 1;
 
@@ -640,6 +838,12 @@ int module_start(SceSize argc, const void *args) {
 
 	memset(&titleid, 0, sizeof(titleid));
 	strncpy(titleid, "main", sizeof(titleid));
+
+	memset(&show1, 0, sizeof(show1));
+	memset(&show2, 0, sizeof(show2));
+	memset(&cls1, 0, sizeof(cls1));
+	memset(&cls2, 0, sizeof(cls2));
+
 	reset_config();
 
 	current_config.mode = 1;
@@ -662,7 +866,7 @@ int module_start(SceSize argc, const void *args) {
 	g_hooks[13] = taiHookFunctionExportForKernel(KERNEL_PID, &power_hook4, "ScePower", 0x1590166F, 0xA7739DBE, power_patched4); // scePowerSetGpuXbarClockFrequency
 
 	taiGetModuleInfoForKernel(KERNEL_PID, "SceCtrl", &tai_info);
-	
+
 	g_hooks[1] = taiHookFunctionExportForKernel(KERNEL_PID, &ref_hook1, "SceCtrl", TAI_ANY_LIBRARY, 0xEA1D3A34, keys_patched1); // sceCtrlPeekBufferPositive
 	g_hooks[2] =  taiHookFunctionOffsetForKernel(KERNEL_PID, &ref_hook2, tai_info.modid, 0, 0x3EF8, 1, keys_patched2); // sceCtrlPeekBufferPositive2
 	g_hooks[3] = taiHookFunctionExportForKernel(KERNEL_PID, &ref_hook3, "SceCtrl", TAI_ANY_LIBRARY, 0x9B96A1AA, keys_patched3); // sceCtrlReadBufferPositive
