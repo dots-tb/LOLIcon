@@ -35,6 +35,7 @@ Installation
 
 Put "lolicon.skprx" in 'tai' folder in the root of your Vita. (Or just use autoplugin, because I'm sure a ver that supports this is out already)
 
+In the 'tai' folder, add the filepath to the "config.txt" file, under the 'KERNAL' section.
 ```text
 *KERNEL
 ur0:tai/lolicon.skprx
